@@ -1,0 +1,47 @@
+
+import requests
+
+URL = "https://www.futbin.com/popular"
+
+headers = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/131.0 Safari/537.36"
+    ),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-GB,en;q=0.9",
+}
+
+print("FC 27 FUTBIN access diagnostic")
+print("Testing:", URL)
+
+try:
+    response = requests.get(
+        URL,
+        headers=headers,
+        timeout=30,
+        allow_redirects=True,
+    )
+
+    print("HTTP status:", response.status_code)
+    print("Final URL:", response.url)
+    print("Page length:", len(response.text))
+    print("Content type:", response.headers.get("content-type", "unknown"))
+
+    if response.status_code == 200:
+        print("RESULT: Page is reachable.")
+        print("Page preview:")
+        print(response.text[:500].replace("\n", " "))
+    elif response.status_code == 403:
+        print("RESULT: FUTBIN returned 403 Forbidden.")
+        print("The request is being refused.")
+        print(response.text[:300].replace("\n", " "))
+    else:
+        print("RESULT: Unexpected HTTP response.")
+        print(response.text[:300].replace("\n", " "))
+
+except requests.RequestException as exc:
+    print("REQUEST ERROR:", type(exc).__name__, str(exc))
+
+print("Diagnostic complete.")
