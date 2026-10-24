@@ -1,2 +1,4 @@
 requests
 git+https://github.com/WilgotM/quick-fut-price.git
+requests
+beautifulsoup4
