@@ -1,22 +1,33 @@
+import requests
+from bs4 import BeautifulSoup
 
-import asyncio
-from futbin_sdk import FutbinClient
+URL = "https://www.futwiz.com/fc27/player/kylian-mbappe/27"
 
-async def main():
-    print("FC 27 Console Price Scanner")
-    
-    async with FutbinClient() as client:
-        print("\nChecking popular players...")
-        players = await client.get_popular_players()
+print("FC 27 FUTWIZ Price Test")
+print("Checking Mbappé...")
 
-        for player in players[:10]:
-            price = getattr(player, "price_ps", None)
-            if price:
-                print(f"{player.name}: {price:,} coins")
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0 Safari/537.36"
+}
 
-        print("\nChecking Team of the Week...")
-        totw = await client.get_totw()
-        print(f"TOTW cards returned: {len(totw)}")
+response = requests.get(URL, headers=headers, timeout=30)
 
-if __name__ == "__main__":
-    asyncio.run(main())
+print("HTTP status:", response.status_code)
+
+if response.status_code != 200:
+    raise Exception(f"FUTWIZ returned HTTP {response.status_code}")
+
+print("Successfully connected to FUTWIZ")
+
+soup = BeautifulSoup(response.text, "html.parser")
+
+print("Page downloaded:", len(response.text), "characters")
+
+# Show text containing possible price information
+text = soup.get_text(" ", strip=True)
+
+for keyword in ["Price", "Console", "PlayStation", "PS"]:
+    if keyword.lower() in text.lower():
+        print(f"Found '{keyword}' on page")
+
+print("FUTWIZ connection test complete.")
