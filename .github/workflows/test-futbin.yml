@@ -1,38 +1,47 @@
 
-name: Test FUTWIZ Access
+name: Test Alternative FC 27 Price Feed
 
 on:
   workflow_dispatch:
 
 jobs:
-  test-futwiz:
+  test-price-feed:
     runs-on: ubuntu-latest
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Test FUTWIZ
+      - name: Test PlayStation price feed
         run: |
           python - <<'PY'
           import requests
 
-          url = "https://www.futwiz.com/fc27/players"
+          url = "https://fc27-market.val.run/latest"
 
           try:
-              response = requests.get(
-                  url,
-                  headers={"User-Agent": "Mozilla/5.0"},
-                  timeout=30,
-              )
-
-              print("TESTED SITE: FUTWIZ")
-              print("URL:", response.url)
+              response = requests.get(url, timeout=30)
               print("HTTP STATUS:", response.status_code)
-              print("PAGE LENGTH:", len(response.text))
-              print("PAGE PREVIEW:", response.text[:500])
+              print("CONTENT TYPE:", response.headers.get("content-type"))
+              response.raise_for_status()
 
-          except requests.RequestException as exc:
-              print("REQUEST ERROR:", repr(exc))
+              data = response.json()
+              print("LAST UPDATED:", data.get("updated"))
+
+              groups = data.get("groups", {})
+              print("AVAILABLE GROUPS:", list(groups.keys()))
+
+              icons = groups.get("icons", [])
+              print("ICON CARDS FOUND:", len(icons))
+
+              for player in icons[:10]:
+                  print(
+                      player.get("name"),
+                      "| rating:", player.get("rating"),
+                      "| price:", player.get("price"),
+                  )
+
+          except Exception as exc:
+              print("TEST FAILED:", repr(exc))
               raise
           PY
