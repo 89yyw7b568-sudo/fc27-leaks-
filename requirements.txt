@@ -1,2 +1,2 @@
 requests
-futbin-sdk
+git+https://github.com/WilgotM/quick-fut-price.git
