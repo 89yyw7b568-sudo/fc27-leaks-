@@ -1,5 +1,4 @@
-
-name:Test FC 27 Price Scanner
+name: Test FC 27 Price Scanner
 
 on:
   workflow_dispatch:
@@ -15,13 +14,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
-      - name: Show dependency file
-        run: |
-          echo "Commit being tested:"
-          git rev-parse --short HEAD
-          echo "Requirements file:"
-          cat requirements.txt
 
       - name: Install dependencies
         run: |
