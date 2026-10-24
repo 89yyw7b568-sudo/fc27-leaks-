@@ -1,5 +1,4 @@
 import requests
-from bs4 import BeautifulSoup
 import re
 
 URL = "https://www.futwiz.com/fc27/player/kylian-mbappe/27"
@@ -18,32 +17,39 @@ print("HTTP status:", response.status_code)
 if response.status_code != 200:
     raise Exception(f"FUTWIZ returned HTTP {response.status_code}")
 
-soup = BeautifulSoup(response.text, "html.parser")
-text = soup.get_text(" ", strip=True)
+html = response.text
 
 print("Successfully downloaded FUTWIZ page")
-print("Page length:", len(response.text))
+print("Page length:", len(html))
 
-# FUTWIZ format:
-# "Player's price on the Xbox and PlayStation console market is 200 coins"
+# Look for the exact wording FUTWIZ uses for console prices.
+patterns = [
+    r"price on the (?:Xbox and )?PlayStation console market is\s*([0-9,.]+)",
+    r"playstation[^<]{0,300}?([0-9,.]+)\s*coins",
+    r"console[^<]{0,300}?([0-9,.]+)\s*coins",
+]
 
-pattern = r"price on the Xbox and PlayStation console market is\s+([\d,.]+)\s+coins"
+price = None
 
-match = re.search(pattern, text, re.IGNORECASE)
+for pattern in patterns:
+    match = re.search(pattern, html, re.IGNORECASE)
+    if match:
+        price = match.group(1)
+        print("Matched pattern:", pattern)
+        break
 
-if match:
-    price = match.group(1)
+if price:
     print("Mbappé PlayStation/Console price:", price, "coins")
 else:
-    print("Could not extract the price.")
+    print("PRICE NOT FOUND IN RAW HTML")
 
-    # Find the relevant section so we can diagnose it
-    index = text.lower().find("playstation")
+    # Show snippets containing likely price-related data
+    for word in ["playstation", "console", "price"]:
+        position = html.lower().find(word)
 
-    if index != -1:
-        print("FUTWIZ text around PlayStation:")
-        print(text[max(0, index - 300):index + 500])
-    else:
-        print("No PlayStation text found.")
+        if position != -1:
+            print(f"\nRAW HTML around '{word}':")
+            print(html[max(0, position - 300):position + 1000])
+            break
 
-print("FUTWIZ price extraction test complete.")
+print("\nFUTWIZ price extraction test complete.")
